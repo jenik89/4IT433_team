@@ -1,0 +1,16 @@
+# Ruff configuration for T8 / 4IT433.
+# Works with ordinary Python files, Jupyter notebooks (*.ipynb)
+# and Fabric-exported notebook-content.py files.
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+# Fabric exports multiple notebook cells into one .py file.
+# Imports inside later cells are valid in notebooks but appear after
+# executable statements to a traditional Python linter.
+[tool.ruff.lint.per-file-ignores]
+"fabric/**/notebook-content.py" = ["E402"]

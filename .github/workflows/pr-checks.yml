@@ -1,0 +1,92 @@
+name: T8 PR checks
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Gitleaks - tajne udaje
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scan full Git history for secrets
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            -v "$GITHUB_WORKSPACE:/repo:ro" \
+            -w /repo \
+            ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            git --redact --no-banner .
+
+  ruff:
+    name: Ruff - Python a Fabric notebooky
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Install Ruff (pinned version)
+        run: python -m pip install ruff==0.17.6
+      - name: Lint Python scripts and notebooks
+        run: ruff check .
+
+  table-names:
+    name: Prefixy vytvarenych tabulek
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Check bronze_ / silver_ naming
+        shell: bash
+        run: |
+          if [ -d fabric ]; then
+            python .github/scripts/check_table_names.py
+          else
+            echo "::notice::Repo nema slozku fabric/; kontrola squadovych tabulek preskocena."
+          fi
+
+  readme:
+    name: Povinne sekce README
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Check project README when Fabric project exists
+        shell: bash
+        run: |
+          if [ -d fabric ]; then
+            python .github/scripts/check_readme_sections.py
+          else
+            echo "::notice::Repo nema slozku fabric/; squadove README se nevyzaduje."
+          fi
+
+  checker-tests:
+    name: Testy kontrol T8
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - name: Test positive and negative cases
+        run: python -m unittest discover -s tests -v

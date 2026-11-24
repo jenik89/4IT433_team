@@ -63,8 +63,3 @@ V ukázkovém projektu nejsou osobní údaje klientů ani cestujících.
 Tajné hodnoty a tokeny se nesmí ukládat do repozitáře; Gitleaks hledá
 jejich nechtěný výskyt v Git historii.
 
-## Použití AI asistentů
-
-AI asistent byl použit k návrhu workflow, sjednocení automatických
-kontrol a přípravě testovacích případů. Výstupy se následně validují
-spuštěním skutečných GitHub Actions a průchodem testů.
